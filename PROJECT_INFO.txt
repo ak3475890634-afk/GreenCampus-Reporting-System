@@ -1,0 +1,9 @@
+GreenCampus – Smart Environmental Issue Reporting System
+Topic: 14 – Green Campus Reporting System
+
+Student: Abhishek Kumar
+Registration No.: 12617954
+Roll No.: RK4P26AJB47
+Section: K4P26AJB
+
+Prototype stack: HTML, CSS, JavaScript, Local Storage
