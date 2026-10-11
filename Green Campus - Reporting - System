@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Green Campus Reporting System</title>
+</head>
+
+<body>
+
+    <h1>Green Campus Environmental Issue Reporting System</h1>
+
+    <p>
+        Report environmental problems around your college campus
+        and help keep the campus clean and green.
+    </p>
+
+    <h2>Report an Issue</h2>
+
+    <form>
+        <label>Issue Type:</label><br>
+        <select>
+            <option>Garbage / Waste</option>
+            <option>Water Leakage</option>
+            <option>Broken Lights</option>
+            <option>Unclean Area</option>
+            <option>Other</option>
+        </select>
+
+        <br><br>
+
+        <label>Issue Description:</label><br>
+        <textarea rows="5" cols="40"
+            placeholder="Describe the environmental issue..."></textarea>
+
+        <br><br>
+
+        <label>Location:</label><br>
+        <input type="text" placeholder="Enter campus location">
+
+        <br><br>
+
+        <button type="submit">Submit Report</button>
+    </form>
+
+</body>
+</html>
