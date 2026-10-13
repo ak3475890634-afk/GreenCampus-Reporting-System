@@ -235,3 +235,83 @@ if (complaintSection && !document.getElementById("complaint-search")) {
 }
 
 
+(function () {
+    const STORAGE_KEY = "greenCampusComplaints";
+    const section = document.getElementById("complaint-list");
+
+    if (!section) return;
+
+    function addComplaintIds() {
+        let complaints = [];
+
+        try {
+            complaints = JSON.parse(
+                localStorage.getItem(STORAGE_KEY) || "[]"
+            );
+        } catch (error) {
+            return;
+        }
+
+        let changed = false;
+
+        complaints.forEach(function (item) {
+            if (!item.id) {
+                item.id = Date.now() + Math.random();
+                changed = true;
+            }
+
+            if (!item.complaintId) {
+                item.complaintId =
+                    "GC-" + String(item.id).replace(".", "");
+                changed = true;
+            }
+        });
+
+        if (changed) {
+            localStorage.setItem(
+                STORAGE_KEY,
+                JSON.stringify(complaints)
+            );
+        }
+
+        const cards = section.querySelectorAll(":scope > div");
+
+        cards.forEach(function (card) {
+            if (!card.querySelector("select")) return;
+            if (card.querySelector(".complaint-id")) return;
+
+            const title = card.querySelector("h3");
+            const description = card.querySelector("p");
+
+            if (!title) return;
+
+            const complaint = complaints.find(function (item) {
+                return item.type === title.textContent &&
+                    item.description === (description?.textContent || "");
+            });
+
+            if (!complaint) return;
+
+            const idLine = document.createElement("p");
+            idLine.className = "complaint-id";
+
+            const strong = document.createElement("strong");
+            strong.textContent = "Complaint ID: ";
+
+            const idText = document.createElement("span");
+            idText.textContent = complaint.complaintId;
+
+            idLine.append(strong, idText);
+            card.prepend(idLine);
+        });
+    }
+
+    addComplaintIds();
+
+    const observer = new MutationObserver(addComplaintIds);
+    observer.observe(section, {
+        childList: true,
+        subtree: true
+    });
+})();
+
