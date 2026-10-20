@@ -1,150 +1,359 @@
 
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Green Campus Admin Dashboard</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 20px;
-      background: #f0f7f2;
-      color: #204b38;
-    }
-    h1 { color: #167548; }
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
-      margin: 20px 0;
-    }
-    .card {
-      background: white;
-      border: 1px solid #d4e4d9;
-      border-radius: 10px;
-      padding: 15px;
-      overflow-wrap: anywhere;
-    }
-    .number { font-size: 28px; font-weight: bold; }
-    .complaint { margin: 12px 0; }
-    
-button {
-  background: #c62828;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  padding: 12px 16px;
-}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Green Campus Admin Dashboard</title>
 
-button:hover {
-  background: #a51d1d;
-}
-, button {
-      
-      padding: 10px;
-      margin-top: 8px;
-      max-width: 100%;
-    }
-    .note { color: #665c35; font-size: 14px; }
-  </style>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f0f7f2;
+            color: #204b38;
+        }
+
+        header {
+            background: #176b45;
+            color: white;
+            padding: 22px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            margin-top: 0;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 7px #00000012;
+        }
+
+        .stat-card h3 {
+            margin: 0 0 12px;
+            font-size: 15px;
+        }
+
+        .stat-card p {
+            font-size: 28px;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .panel {
+            background: white;
+            padding: 18px;
+            border-radius: 10px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 11px;
+            margin: 5px 0 12px;
+            border: 1px solid #bbb;
+            border-radius: 6px;
+        }
+
+        .complaint {
+            border: 1px solid #d5e3d9;
+            border-radius: 9px;
+            padding: 15px;
+            margin: 14px 0;
+            overflow-wrap: anywhere;
+        }
+
+        .complaint h3 {
+            margin-top: 0;
+        }
+
+        .status {
+            font-weight: bold;
+        }
+
+        .delete-btn {
+            background: #c62828;
+            color: white;
+            border: none;
+            padding: 10px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        .empty {
+            color: #666;
+            padding: 15px 0;
+        }
+
+        .note {
+            font-size: 13px;
+            color: #666;
+        }
+    </style>
 </head>
+
 <body>
-  <h1>Green Campus Admin Dashboard</h1>
-  <p>Environmental Complaint Management</p>
-  <p class="note">
-    Demo only: complaints are stored in this browser, not shared
-    across students' devices. This page has no secure admin login.
-  </p>
 
-  <div class="stats">
-    <div class="card">Total Complaints
-      <div class="number" id="total">0</div>
-    </div>
-    <div class="card">Pending
-      <div class="number" id="pending">0</div>
-    </div>
-    <div class="card">In Progress
-      <div class="number" id="progress">0</div>
-    </div>
-    <div class="card">Resolved
-      <div class="number" id="resolved">0</div>
-    </div>
-  </div>
+<header>
+    <h1>Green Campus Admin Dashboard</h1>
+    <p>Manage environmental complaints on your campus.</p>
+</header>
 
-  <h2>Manage Complaints</h2>
-  <div id="complaints"></div>
+<div class="stats">
+    <div class="stat-card">
+        <h3>Total Complaints</h3>
+        <p id="total">0</p>
+    </div>
 
-  <script>
-    const KEY = "greenCampusComplaints";
+    <div class="stat-card">
+        <h3>Pending</h3>
+        <p id="pending">0</p>
+    </div>
+
+    <div class="stat-card">
+        <h3>In Progress</h3>
+        <p id="progress">0</p>
+    </div>
+
+    <div class="stat-card">
+        <h3>Resolved</h3>
+        <p id="resolved">0</p>
+    </div>
+</div>
+
+<div class="panel">
+    <h2>Manage Complaints</h2>
+
+    <input
+        type="search"
+        id="search"
+        placeholder="Search by Complaint ID, issue or location..."
+    >
+
+    <select id="filter">
+        <option value="All">All Statuses</option>
+        <option value="Pending">Pending</option>
+        <option value="In Progress">In Progress</option>
+        <option value="Resolved">Resolved</option>
+    </select>
+
+    <div id="complaints"></div>
+
+    <p class="note">
+        Dashboard data is stored in this browser's localStorage.
+    </p>
+</div>
+
+<script>
+    const STORAGE_KEY = "greenCampusComplaints";
+
+    const totalEl = document.getElementById("total");
+    const pendingEl = document.getElementById("pending");
+    const progressEl = document.getElementById("progress");
+    const resolvedEl = document.getElementById("resolved");
     const list = document.getElementById("complaints");
+    const search = document.getElementById("search");
+    const filter = document.getElementById("filter");
 
-    function loadComplaints() {
-      let items = [];
-      try {
-        items = JSON.parse(localStorage.getItem(KEY) || "[]");
-      } catch (e) {
-        list.textContent = "Unable to read saved complaints.";
-        return;
-      }
+    function getComplaints() {
+        try {
+            const data = JSON.parse(
+                localStorage.getItem(STORAGE_KEY) || "[]"
+            );
 
-      document.getElementById("total").textContent = items.length;
-      document.getElementById("pending").textContent =
-        items.filter(x => (x.status || "Pending") === "Pending").length;
-      document.getElementById("progress").textContent =
-        items.filter(x => x.status === "In Progress").length;
-      document.getElementById("resolved").textContent =
-        items.filter(x => x.status === "Resolved").length;
-
-      list.replaceChildren();
-
-      if (!items.length) {
-        list.textContent = "No complaints found in this browser.";
-        return;
-      }
-
-      items.forEach(function (item, index) {
-        const card = document.createElement("div");
-        card.className = "card complaint";
-
-        const title = document.createElement("h3");
-        title.textContent = item.type || "Environmental Issue";
-
-        const id = document.createElement("p");
-        id.textContent = "Complaint ID: " +
-          (item.complaintId || item.id || "Not assigned");
-
-        const desc = document.createElement("p");
-        desc.textContent = "Details: " + (item.description || "");
-
-        const location = document.createElement("p");
-        location.textContent = "Location: " + (item.location || "");
-
-        const status = document.createElement("select");
-        ["Pending", "In Progress", "Resolved"].forEach(function (s) {
-          const option = document.createElement("option");
-          option.value = s;
-          option.textContent = s;
-          status.appendChild(option);
-        });
-        status.value = item.status || "Pending";
-        status.setAttribute("aria-label", "Change complaint status");
-
-        status.addEventListener("change", function () {
-          items[index].status = status.value;
-          localStorage.setItem(KEY, JSON.stringify(items));
-          loadComplaints();
-        });
-
-        card.append(title, id, desc, location, status);
-        list.appendChild(card);
-      });
+            return Array.isArray(data) ? data : [];
+        } catch (error) {
+            return [];
+        }
     }
 
-    loadComplaints();
-  </script>
+    function saveComplaints(data) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+
+    function updateStats(data) {
+        totalEl.textContent = data.length;
+
+        pendingEl.textContent = data.filter(
+            item => (item.status || "Pending") === "Pending"
+        ).length;
+
+        progressEl.textContent = data.filter(
+            item => item.status === "In Progress"
+        ).length;
+
+        resolvedEl.textContent = data.filter(
+            item => item.status === "Resolved"
+        ).length;
+    }
+
+    function renderDashboard() {
+        const data = getComplaints();
+        updateStats(data);
+        list.replaceChildren();
+
+        const query = search.value.toLowerCase().trim();
+        const selectedStatus = filter.value;
+
+        const filtered = data.filter(item => {
+            const text = [
+                item.complaintId,
+                item.type,
+                item.description,
+                item.location,
+                item.date
+            ].join(" ").toLowerCase();
+
+            const matchesSearch = text.includes(query);
+            const matchesStatus =
+                selectedStatus === "All" ||
+                (item.status || "Pending") === selectedStatus;
+
+            return matchesSearch && matchesStatus;
+        });
+
+        if (filtered.length === 0) {
+            const message = document.createElement("p");
+            message.className = "empty";
+            message.textContent = data.length === 0
+                ? "No complaints have been submitted yet."
+                : "No matching complaints found.";
+
+            list.appendChild(message);
+            return;
+        }
+
+        filtered.forEach(item => {
+            const card = document.createElement("div");
+            card.className = "complaint";
+
+            const title = document.createElement("h3");
+            title.textContent = item.type || "Environmental Issue";
+
+            const id = document.createElement("p");
+            id.textContent = "Complaint ID: " +
+                (item.complaintId || "Not assigned");
+
+            const description = document.createElement("p");
+            description.textContent =
+                "Description: " + (item.description || "");
+
+            const location = document.createElement("p");
+            location.textContent =
+                "Location: " + (item.location || "");
+
+            const date = document.createElement("p");
+            date.textContent =
+                "Reported: " + (item.date || "Unknown");
+
+            const label = document.createElement("label");
+            label.textContent = "Update status: ";
+
+            const status = document.createElement("select");
+            status.className = "status";
+
+            ["Pending", "In Progress", "Resolved"].forEach(value => {
+                const option = document.createElement("option");
+                option.value = value;
+                option.textContent = value;
+                status.appendChild(option);
+            });
+
+            status.value = item.status || "Pending";
+
+            status.addEventListener("change", () => {
+                const current = getComplaints();
+                const index = current.findIndex(
+                    entry => entry.id === item.id
+                );
+
+                if (index === -1) return;
+
+                const previous = current[index].status;
+
+                current[index].status = status.value;
+
+                try {
+                    saveComplaints(current);
+                    renderDashboard();
+                } catch (error) {
+                    current[index].status = previous;
+                    alert("Status save nahi hua.");
+                    renderDashboard();
+                }
+            });
+
+            label.appendChild(status);
+
+            const deleteBtn = document.createElement("button");
+            deleteBtn.className = "delete-btn";
+            deleteBtn.textContent = "Delete Complaint";
+            deleteBtn.type = "button";
+
+            deleteBtn.addEventListener("click", () => {
+                if (!confirm(
+                    "Delete complaint " +
+                    (item.complaintId || "") + "?"
+                )) return;
+
+                const current = getComplaints();
+                const index = current.findIndex(
+                    entry => entry.id === item.id
+                );
+
+                if (index === -1) return;
+
+                const deleted = current.splice(index, 1)[0];
+
+                try {
+                    saveComplaints(current);
+                    renderDashboard();
+                } catch (error) {
+                    alert("Delete failed. Please try again.");
+                }
+            });
+
+            card.append(
+                title,
+                id,
+                description,
+                location,
+                date,
+                label,
+                deleteBtn
+            );
+
+            list.appendChild(card);
+        });
+    }
+
+    search.addEventListener("input", renderDashboard);
+    filter.addEventListener("change", renderDashboard);
+
+    renderDashboard();
+
+    window.addEventListener("storage", event => {
+        if (event.key === STORAGE_KEY) {
+            renderDashboard();
+        }
+    });
+</script>
+
 </body>
 </html>
