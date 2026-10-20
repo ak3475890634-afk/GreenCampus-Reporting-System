@@ -1,0 +1,178 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Green Campus Login</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #d9f7e4, #eaf2ff);
+      padding: 20px;
+    }
+
+    .login-box {
+      width: 100%;
+      max-width: 380px;
+      background: white;
+      padding: 30px 24px;
+      border-radius: 16px;
+      box-shadow: 0 8px 25px #00000018;
+    }
+
+    h1 {
+      text-align: center;
+      color: #176b3a;
+      font-size: 26px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #666;
+      margin-bottom: 25px;
+    }
+
+    label {
+      display: block;
+      margin: 14px 0 6px;
+      font-weight: bold;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 22px;
+      padding: 13px;
+      border: none;
+      border-radius: 8px;
+      background: #198754;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #12683e;
+    }
+
+    #message {
+      text-align: center;
+      margin-top: 15px;
+      font-size: 14px;
+      color: #c62828;
+    }
+
+    .note {
+      margin-top: 18px;
+      font-size: 12px;
+      color: #777;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="login-box">
+    <h1>🌱 Green Campus</h1>
+    <p class="subtitle">Environmental Issue Reporting System</p>
+
+    <form id="loginForm">
+      <label for="role">Login as</label>
+      <select id="role" required>
+        <option value="student">Student</option>
+        <option value="admin">Admin</option>
+      </select>
+
+      <label for="email">Email</label>
+      <input
+        type="email"
+        id="email"
+        placeholder="Enter email"
+        required
+      >
+
+      <label for="password">Password</label>
+      <input
+        type="password"
+        id="password"
+        placeholder="Enter password"
+        required
+      >
+
+      <button type="submit">Login</button>
+      <p id="message" role="status"></p>
+    </form>
+
+    <p class="note">
+      College project demo login. Not for real passwords.
+    </p>
+  </div>
+
+  <script>
+    const form = document.getElementById("loginForm");
+    const message = document.getElementById("message");
+
+    form.addEventListener("submit", function(event) {
+      event.preventDefault();
+
+      const role = document.getElementById("role").value;
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+
+      // Demo credentials only. Replace with secure authentication later.
+      const accounts = {
+        student: {
+          email: "student@greencampus.demo",
+          password: "Student123"
+        },
+        admin: {
+          email: "admin@greencampus.demo",
+          password: "Admin123"
+        }
+      };
+
+      const account = accounts[role];
+
+      if (
+        email.toLowerCase() === account.email &&
+        password === account.password
+      ) {
+        message.style.color = "green";
+        message.textContent = "Login successful! Opening page...";
+
+        sessionStorage.setItem("greenCampusRole", role);
+
+        setTimeout(function() {
+          if (role === "admin") {
+            window.location.href = "admin.html";
+          } else {
+            window.location.href = "index.html";
+          }
+        }, 700);
+      } else {
+        message.style.color = "red";
+        message.textContent = "Invalid email or password!";
+      }
+    });
+  </script>
+</body>
+</html>
