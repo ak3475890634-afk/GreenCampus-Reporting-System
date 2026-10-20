@@ -354,6 +354,11 @@
         }
     });
 </script>
-
+<script>
+  // Demo protection: admin login required
+  if (sessionStorage.getItem("greenCampusRole") !== "admin") {
+    window.location.replace("login.html");
+  }
+</script>
 </body>
 </html>
