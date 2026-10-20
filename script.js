@@ -1,21 +1,33 @@
 
-
-
 const form = document.querySelector("form");
 const STORAGE_KEY = "greenCampusComplaints";
 
 if (form) {
-    let complaints = JSON.parse(
-        localStorage.getItem(STORAGE_KEY) || "[]"
-    );
+    let complaints = [];
 
-    // Existing complaints ko status dena
+    try {
+        complaints = JSON.parse(
+            localStorage.getItem(STORAGE_KEY) || "[]"
+        );
+
+        if (!Array.isArray(complaints)) {
+            complaints = [];
+        }
+    } catch (error) {
+        complaints = [];
+    }
+
+    // Existing complaints ko IDs aur default status dena
     complaints = complaints.map(function (item) {
+        if (!item.complaintId) {
+            item.complaintId =
+                "GC-" + String(item.id || (Date.now() + Math.random()))
+                    .replace(".", "");
+        }
+
         return {
             ...item,
-            id: item.id || (
-                Date.now() + Math.random()
-            ),
+            id: item.id || (Date.now() + Math.random()),
             status: item.status || "Pending"
         };
     });
@@ -35,6 +47,7 @@ if (form) {
         );
     }
 
+    // Complaint list display
     function displayComplaints() {
         section.replaceChildren();
 
@@ -42,101 +55,207 @@ if (form) {
         heading.textContent = "Reported Issues";
         section.appendChild(heading);
 
-        if (complaints.length === 0) {
-            const message = document.createElement("p");
-            message.textContent = "No complaints reported yet.";
-            section.appendChild(message);
-            return;
-        }
+        // Search box
+        const search = document.createElement("input");
+        search.type = "search";
+        search.placeholder = "Search by ID, issue or location...";
+        search.style.cssText =
+            "width:100%;padding:10px;box-sizing:border-box;margin-bottom:10px;";
 
-        complaints.forEach(function (item) {
-            const card = document.createElement("div");
-            card.style.border = "1px solid #ccc";
-            card.style.padding = "12px";
-            card.style.margin = "10px 0";
-            card.style.borderRadius = "8px";
+        // Status filter
+        const filter = document.createElement("select");
+        filter.style.cssText =
+            "width:100%;padding:10px;margin-bottom:15px;";
 
-            const title = document.createElement("h3");
-            title.textContent = item.type || "Environmental Issue";
+        [
+            "All Statuses",
+            "Pending",
+            "In Progress",
+            "Resolved"
+        ].forEach(function (status) {
+            const option = document.createElement("option");
+            option.value = status;
+            option.textContent = status;
+            filter.appendChild(option);
+        });
 
-            const description = document.createElement("p");
-            description.textContent = item.description || "";
+        section.append(search, filter);
 
-            const location = document.createElement("p");
-            location.textContent = "Location: " + (item.location || "");
+        const list = document.createElement("div");
+        section.appendChild(list);
 
-            const date = document.createElement("small");
-            date.textContent = "Reported: " + (item.date || "Unknown");
+        function renderFilteredComplaints() {
+            list.replaceChildren();
 
-            const statusLabel = document.createElement("label");
-            statusLabel.textContent = "Complaint Status: ";
+            const query = search.value.toLowerCase().trim();
+            const selectedStatus = filter.value;
 
-            const statusSelect = document.createElement("select");
+            const filtered = complaints.filter(function (item) {
+                const searchableText = [
+                    item.complaintId,
+                    item.type,
+                    item.description,
+                    item.location,
+                    item.date
+                ].join(" ").toLowerCase();
 
-            ["Pending", "In Progress", "Resolved"].forEach(
-                function (status) {
+                const matchesSearch = searchableText.includes(query);
+                const matchesStatus =
+                    selectedStatus === "All Statuses" ||
+                    item.status === selectedStatus;
+
+                return matchesSearch && matchesStatus;
+            });
+
+            if (filtered.length === 0) {
+                const message = document.createElement("p");
+                message.textContent = complaints.length === 0
+                    ? "No complaints reported yet."
+                    : "No matching complaints found.";
+
+                list.appendChild(message);
+                return;
+            }
+
+            filtered.forEach(function (item) {
+                const card = document.createElement("div");
+
+                card.style.cssText =
+                    "border:1px solid #ccc;padding:12px;margin:10px 0;border-radius:8px;";
+
+                const idLine = document.createElement("p");
+                const idStrong = document.createElement("strong");
+                idStrong.textContent = "Complaint ID: ";
+                idLine.append(idStrong, item.complaintId);
+
+                const title = document.createElement("h3");
+                title.textContent = item.type || "Environmental Issue";
+
+                const description = document.createElement("p");
+                description.textContent = item.description || "";
+
+                const location = document.createElement("p");
+                location.textContent =
+                    "Location: " + (item.location || "");
+
+                const date = document.createElement("small");
+                date.textContent =
+                    "Reported: " + (item.date || "Unknown");
+
+                const statusLabel = document.createElement("label");
+                statusLabel.textContent = "Complaint Status: ";
+
+                const statusSelect = document.createElement("select");
+
+                [
+                    "Pending",
+                    "In Progress",
+                    "Resolved"
+                ].forEach(function (status) {
                     const option = document.createElement("option");
                     option.value = status;
                     option.textContent = status;
                     statusSelect.appendChild(option);
-                }
-            );
+                });
 
-            statusSelect.value = item.status;
-            statusSelect.setAttribute(
-                "aria-label",
-                "Status for " + title.textContent
-            );
-
-            statusSelect.addEventListener("change", function () {
-                const complaint = complaints.find(
-                    function (entry) {
-                        return entry.id === item.id;
-                    }
+                statusSelect.value = item.status;
+                statusSelect.setAttribute(
+                    "aria-label",
+                    "Status for " + title.textContent
                 );
 
-                if (!complaint) return;
+                statusSelect.addEventListener("change", function () {
+                    const previousStatus = item.status;
+                    item.status = statusSelect.value;
 
-                const previousStatus = complaint.status;
-                complaint.status = statusSelect.value;
+                    try {
+                        saveComplaints();
+                        renderFilteredComplaints();
+                    } catch (error) {
+                        item.status = previousStatus;
+                        alert("Status save nahi ho paya. Storage check karo.");
+                        renderFilteredComplaints();
+                    }
+                });
 
-                try {
-                    saveComplaints();
-                    displayComplaints();
-                } catch (error) {
-                    complaint.status = previousStatus;
-                    alert("Status save nahi ho paya. Storage check karo.");
-                    displayComplaints();
-                }
+                statusLabel.appendChild(statusSelect);
+
+                // Delete complaint button
+                const deleteButton = document.createElement("button");
+                deleteButton.type = "button";
+                deleteButton.textContent = "Delete Complaint";
+
+                deleteButton.style.cssText =
+                    "display:block;margin-top:12px;padding:9px 12px;background:#dc3545;color:white;border:none;border-radius:5px;cursor:pointer;";
+
+                deleteButton.addEventListener("click", function () {
+                    const confirmed = confirm(
+                        "Delete complaint " +
+                        item.complaintId +
+                        " permanently?"
+                    );
+
+                    if (!confirmed) return;
+
+                    const index = complaints.findIndex(function (entry) {
+                        return entry.id === item.id;
+                    });
+
+                    if (index === -1) return;
+
+                    const deletedComplaint = complaints.splice(index, 1)[0];
+
+                    try {
+                        saveComplaints();
+                        displayComplaints();
+                    } catch (error) {
+                        complaints.splice(index, 0, deletedComplaint);
+                        alert("Delete failed. Browser storage check karo.");
+                        displayComplaints();
+                    }
+                });
+
+                card.append(
+                    idLine,
+                    title,
+                    description,
+                    location,
+                    date,
+                    statusLabel,
+                    deleteButton
+                );
+
+                list.appendChild(card);
             });
+        }
 
-            statusLabel.appendChild(statusSelect);
-            card.append(title, description, location, date, statusLabel);
-            section.appendChild(card);
-        });
+        search.addEventListener("input", renderFilteredComplaints);
+        filter.addEventListener("change", renderFilteredComplaints);
+
+        renderFilteredComplaints();
     }
 
+    // Submit new complaint
     form.addEventListener("submit", function (event) {
         event.preventDefault();
 
         const category = form.querySelector("select");
         const description = form.querySelector("textarea");
+
         const inputs = form.querySelectorAll(
             'input:not([type="submit"]):not([type="button"]):not([type="hidden"])'
         );
 
-        const locationInput = Array.from(inputs).find(
-            function (input) {
-                return /location/i.test(
-                    (input.name || "") + " " +
-                    (input.id || "") + " " +
-                    (input.placeholder || "")
-                );
-            }
-        ) || inputs[0];
+        const locationInput = Array.from(inputs).find(function (input) {
+            return /location/i.test(
+                (input.name || "") + " " +
+                (input.id || "") + " " +
+                (input.placeholder || "")
+            );
+        }) || inputs[0];
 
         if (!category || !description || !locationInput) {
-            alert("Form fields identify nahi ho paaye. index.html check karo.");
+            alert("Form fields nahi mile. index.html check karo.");
             return;
         }
 
@@ -149,8 +268,11 @@ if (form) {
             return;
         }
 
+        const id = Date.now() + Math.random();
+
         const complaint = {
-            id: Date.now() + Math.random(),
+            id: id,
+            complaintId: "GC-" + String(id).replace(".", ""),
             type: type,
             description: details,
             location: place,
@@ -173,145 +295,12 @@ if (form) {
         alert("Complaint saved successfully!");
     });
 
-    saveComplaints();
+    // Save migrated complaints
+    try {
+        saveComplaints();
+    } catch (error) {
+        console.error("Could not save complaints:", error);
+    }
+
     displayComplaints();
 }
-
-const complaintSection = document.getElementById("complaint-list");
-
-if (complaintSection && !document.getElementById("complaint-search")) {
-    const toolbar = document.createElement("div");
-    toolbar.style.margin = "20px 0";
-
-    const search = document.createElement("input");
-    search.id = "complaint-search";
-    search.type = "search";
-    search.placeholder = "Search by issue or location...";
-    search.style.padding = "10px";
-    search.style.width = "100%";
-    search.style.marginBottom = "10px";
-
-    const filter = document.createElement("select");
-    filter.id = "complaint-status-filter";
-    filter.style.padding = "10px";
-    filter.style.width = "100%";
-
-    ["All Statuses", "Pending", "In Progress", "Resolved"].forEach(
-        function (status) {
-            const option = document.createElement("option");
-            option.value = status;
-            option.textContent = status;
-            filter.appendChild(option);
-        }
-    );
-
-    toolbar.append(search, filter);
-    complaintSection.prepend(toolbar);
-
-    function filterComplaints() {
-        const query = search.value.toLowerCase().trim();
-        const selectedStatus = filter.value;
-
-        const cards = complaintSection.querySelectorAll(":scope > div");
-
-        cards.forEach(function (card) {
-            // Search only complaint cards, not the toolbar
-            const statusSelect = card.querySelector("select");
-            if (!statusSelect) return;
-
-            const text = card.textContent.toLowerCase();
-            const matchesText = text.includes(query);
-            const matchesStatus =
-                selectedStatus === "All Statuses" ||
-                statusSelect.value === selectedStatus;
-
-            card.style.display =
-                matchesText && matchesStatus ? "" : "none";
-        });
-    }
-
-    search.addEventListener("input", filterComplaints);
-    filter.addEventListener("change", filterComplaints);
-}
-
-
-(function () {
-    const STORAGE_KEY = "greenCampusComplaints";
-    const section = document.getElementById("complaint-list");
-
-    if (!section) return;
-
-    function addComplaintIds() {
-        let complaints = [];
-
-        try {
-            complaints = JSON.parse(
-                localStorage.getItem(STORAGE_KEY) || "[]"
-            );
-        } catch (error) {
-            return;
-        }
-
-        let changed = false;
-
-        complaints.forEach(function (item) {
-            if (!item.id) {
-                item.id = Date.now() + Math.random();
-                changed = true;
-            }
-
-            if (!item.complaintId) {
-                item.complaintId =
-                    "GC-" + String(item.id).replace(".", "");
-                changed = true;
-            }
-        });
-
-        if (changed) {
-            localStorage.setItem(
-                STORAGE_KEY,
-                JSON.stringify(complaints)
-            );
-        }
-
-        const cards = section.querySelectorAll(":scope > div");
-
-        cards.forEach(function (card) {
-            if (!card.querySelector("select")) return;
-            if (card.querySelector(".complaint-id")) return;
-
-            const title = card.querySelector("h3");
-            const description = card.querySelector("p");
-
-            if (!title) return;
-
-            const complaint = complaints.find(function (item) {
-                return item.type === title.textContent &&
-                    item.description === (description?.textContent || "");
-            });
-
-            if (!complaint) return;
-
-            const idLine = document.createElement("p");
-            idLine.className = "complaint-id";
-
-            const strong = document.createElement("strong");
-            strong.textContent = "Complaint ID: ";
-
-            const idText = document.createElement("span");
-            idText.textContent = complaint.complaintId;
-
-            idLine.append(strong, idText);
-            card.prepend(idLine);
-        });
-    }
-
-    addComplaintIds();
-
-    const observer = new MutationObserver(addComplaintIds);
-    observer.observe(section, {
-        childList: true,
-        subtree: true
-    });
-})();
-
