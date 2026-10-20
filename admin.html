@@ -2,384 +2,311 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Green Campus Admin Dashboard</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Green Campus Admin Dashboard</title>
 
-    <style>
-        * {
-            box-sizing: border-box;
-        }
+  <style>
+    * { box-sizing: border-box; }
 
-        body {
-            
-<button onclick="logout()" style="
-  background:#c62828;
-  color:white;
-  padding:10px 18px;
-  border:none;
-  border-radius:6px;
-  cursor:pointer;
-  float:right;
-">
-  Logout
-</button>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+      background: #f0f7f2;
+      color: #204b38;
+    }
 
-<script>
-  function logout() {
-    sessionStorage.removeItem("greenCampusRole");
-    window.location.replace("login.html");
-  }
-</script>
+    header {
+      background: #176b45;
+      color: white;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
 
-            
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background: #f0f7f2;
-            color: #204b38;
-        }
+    header h1 { margin: 0; font-size: 23px; }
 
-        header {
-            background: #176b45;
-            color: white;
-            padding: 22px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-        }
+    button {
+      padding: 10px 14px;
+      border: 0;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+    }
 
-        header h1 {
-            margin-top: 0;
-        }
+    .logout {
+      background: #c62828;
+      color: white;
+    }
 
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 15px;
-            margin-bottom: 25px;
-        }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 14px;
+      margin-bottom: 22px;
+    }
 
-        .stat-card {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 7px #00000012;
-        }
+    .stat-card, .panel {
+      background: white;
+      padding: 18px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px #00000012;
+    }
 
-        .stat-card h3 {
-            margin: 0 0 12px;
-            font-size: 15px;
-        }
+    .stat-card h3 { font-size: 14px; margin: 0 0 10px; }
+    .stat-card p { font-size: 28px; font-weight: bold; margin: 0; }
 
-        .stat-card p {
-            font-size: 28px;
-            font-weight: bold;
-            margin: 0;
-        }
+    .filters {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
 
-        .panel {
-            background: white;
-            padding: 18px;
-            border-radius: 10px;
-        }
+    input, select {
+      width: 100%;
+      padding: 11px;
+      border: 1px solid #c8d7cd;
+      border-radius: 6px;
+      font-size: 15px;
+      background: white;
+    }
 
-        input, select {
-            width: 100%;
-            padding: 11px;
-            margin: 5px 0 12px;
-            border: 1px solid #bbb;
-            border-radius: 6px;
-        }
+    .complaint {
+      border: 1px solid #e0e9e2;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 13px;
+      overflow-wrap: anywhere;
+    }
 
-        .complaint {
-            border: 1px solid #d5e3d9;
-            border-radius: 9px;
-            padding: 15px;
-            margin: 14px 0;
-            overflow-wrap: anywhere;
-        }
+    .complaint h3 { margin-top: 0; }
 
-        .complaint h3 {
-            margin-top: 0;
-        }
+    .complaint p { line-height: 1.5; }
 
-        .status {
-            font-weight: bold;
-        }
+    .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
 
-        .delete-btn {
-            background: #c62828;
-            color: white;
-            border: none;
-            padding: 10px 14px;
-            border-radius: 6px;
-            cursor: pointer;
-            margin-top: 8px;
-        }
+    .update { background: #176b45; color: white; }
+    .delete { background: #c62828; color: white; }
 
-        .empty {
-            color: #666;
-            padding: 15px 0;
-        }
+    .status {
+      display: inline-block;
+      padding: 5px 9px;
+      border-radius: 20px;
+      background: #e7f3e9;
+      font-size: 12px;
+      font-weight: bold;
+    }
 
-        .note {
-            font-size: 13px;
-            color: #666;
-        }
-    </style>
+    #empty { color: #666; text-align: center; padding: 20px; }
+
+    .notice {
+      background: #fff4d6;
+      color: #654d12;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      font-size: 13px;
+    }
+  </style>
 </head>
 
 <body>
-
-<header>
-    <h1>Green Campus Admin Dashboard</h1>
-    <p>Manage environmental complaints on your campus.</p>
-</header>
-
-<div class="stats">
-    <div class="stat-card">
-        <h3>Total Complaints</h3>
-        <p id="total">0</p>
+  <header>
+    <div>
+      <h1>🌱 Green Campus Admin</h1>
+      <p style="margin-bottom:0">Environmental Issue Reporting System</p>
     </div>
+    <button class="logout" id="logoutButton">Logout</button>
+  </header>
 
+  <div class="notice">
+    Demo project: login protection is client-side only and is not secure
+    authentication.
+  </div>
+
+  <section class="stats">
     <div class="stat-card">
-        <h3>Pending</h3>
-        <p id="pending">0</p>
+      <h3>Total Complaints</h3>
+      <p id="totalCount">0</p>
     </div>
-
     <div class="stat-card">
-        <h3>In Progress</h3>
-        <p id="progress">0</p>
+      <h3>Pending</h3>
+      <p id="pendingCount">0</p>
     </div>
-
     <div class="stat-card">
-        <h3>Resolved</h3>
-        <p id="resolved">0</p>
+      <h3>In Progress</h3>
+      <p id="progressCount">0</p>
     </div>
-</div>
+    <div class="stat-card">
+      <h3>Resolved</h3>
+      <p id="resolvedCount">0</p>
+    </div>
+  </section>
 
-<div class="panel">
+  <section class="panel">
     <h2>Manage Complaints</h2>
 
-    <input
-        type="search"
-        id="search"
-        placeholder="Search by Complaint ID, issue or location..."
-    >
+    <div class="filters">
+      <input id="searchInput" type="search"
+        placeholder="Search ID, issue, or location">
 
-    <select id="filter">
-        <option value="All">All Statuses</option>
+      <select id="statusFilter">
+        <option value="all">All statuses</option>
         <option value="Pending">Pending</option>
         <option value="In Progress">In Progress</option>
         <option value="Resolved">Resolved</option>
-    </select>
+      </select>
+    </div>
 
-    <div id="complaints"></div>
+    <div id="complaintList"></div>
+    <p id="empty" hidden>No complaints found.</p>
+  </section>
 
-    <p class="note">
-        Dashboard data is stored in this browser's localStorage.
-    </p>
-</div>
+  <script>
+    // Redirect if this browser has no admin demo session.
+    if (sessionStorage.getItem("greenCampusRole") !== "admin") {
+      window.location.replace("login.html");
+    }
 
-<script>
     const STORAGE_KEY = "greenCampusComplaints";
+    const list = document.getElementById("complaintList");
+    const searchInput = document.getElementById("searchInput");
+    const statusFilter = document.getElementById("statusFilter");
+    const empty = document.getElementById("empty");
 
-    const totalEl = document.getElementById("total");
-    const pendingEl = document.getElementById("pending");
-    const progressEl = document.getElementById("progress");
-    const resolvedEl = document.getElementById("resolved");
-    const list = document.getElementById("complaints");
-    const search = document.getElementById("search");
-    const filter = document.getElementById("filter");
-
-    function getComplaints() {
-        try {
-            const data = JSON.parse(
-                localStorage.getItem(STORAGE_KEY) || "[]"
-            );
-
-            return Array.isArray(data) ? data : [];
-        } catch (error) {
-            return [];
-        }
+    function loadComplaints() {
+      try {
+        const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+        return Array.isArray(data) ? data : [];
+      } catch {
+        return [];
+      }
     }
 
     function saveComplaints(data) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     }
 
-    function updateStats(data) {
-        totalEl.textContent = data.length;
-
-        pendingEl.textContent = data.filter(
-            item => (item.status || "Pending") === "Pending"
-        ).length;
-
-        progressEl.textContent = data.filter(
-            item => item.status === "In Progress"
-        ).length;
-
-        resolvedEl.textContent = data.filter(
-            item => item.status === "Resolved"
-        ).length;
+    function getStatus(item) {
+      return item.status || "Pending";
     }
 
-    function renderDashboard() {
-        const data = getComplaints();
-        updateStats(data);
-        list.replaceChildren();
+    function getId(item, index) {
+      return item.id || item.complaintId || ("GC-" + (index + 1));
+    }
 
-        const query = search.value.toLowerCase().trim();
-        const selectedStatus = filter.value;
+    function render() {
+      const complaints = loadComplaints();
 
-        const filtered = data.filter(item => {
-            const text = [
-                item.complaintId,
-                item.type,
-                item.description,
-                item.location,
-                item.date
-            ].join(" ").toLowerCase();
+      document.getElementById("totalCount").textContent = complaints.length;
+      document.getElementById("pendingCount").textContent =
+        complaints.filter(c => getStatus(c) === "Pending").length;
+      document.getElementById("progressCount").textContent =
+        complaints.filter(c => getStatus(c) === "In Progress").length;
+      document.getElementById("resolvedCount").textContent =
+        complaints.filter(c => getStatus(c) === "Resolved").length;
 
-            const matchesSearch = text.includes(query);
-            const matchesStatus =
-                selectedStatus === "All" ||
-                (item.status || "Pending") === selectedStatus;
+      const query = searchInput.value.trim().toLowerCase();
+      const filter = statusFilter.value;
 
-            return matchesSearch && matchesStatus;
+      const visible = complaints
+        .map((item, index) => ({ item, index }))
+        .filter(({ item, index }) => {
+          const searchable = [
+            getId(item, index),
+            item.issueType,
+            item.issue,
+            item.category,
+            item.description,
+            item.location
+          ].filter(Boolean).join(" ").toLowerCase();
+
+          return searchable.includes(query) &&
+            (filter === "all" || getStatus(item) === filter);
         });
 
-        if (filtered.length === 0) {
-            const message = document.createElement("p");
-            message.className = "empty";
-            message.textContent = data.length === 0
-                ? "No complaints have been submitted yet."
-                : "No matching complaints found.";
+      list.replaceChildren();
+      empty.hidden = visible.length > 0;
 
-            list.appendChild(message);
-            return;
-        }
+      visible.forEach(({ item, index }) => {
+        const card = document.createElement("article");
+        card.className = "complaint";
 
-        filtered.forEach(item => {
-            const card = document.createElement("div");
-            card.className = "complaint";
+        const title = document.createElement("h3");
+        title.textContent = (item.issueType || item.issue || item.category || "Environmental Issue")
+          + " — " + getId(item, index);
 
-            const title = document.createElement("h3");
-            title.textContent = item.type || "Environmental Issue";
+        const status = document.createElement("span");
+        status.className = "status";
+        status.textContent = getStatus(item);
 
-            const id = document.createElement("p");
-            id.textContent = "Complaint ID: " +
-                (item.complaintId || "Not assigned");
+        const description = document.createElement("p");
+        description.textContent = "Description: " + (item.description || "Not provided");
 
-            const description = document.createElement("p");
-            description.textContent =
-                "Description: " + (item.description || "");
+        const location = document.createElement("p");
+        location.textContent = "Location: " + (item.location || "Not provided");
 
-            const location = document.createElement("p");
-            location.textContent =
-                "Location: " + (item.location || "");
-
-            const date = document.createElement("p");
-            date.textContent =
-                "Reported: " + (item.date || "Unknown");
-
-            const label = document.createElement("label");
-            label.textContent = "Update status: ";
-
-            const status = document.createElement("select");
-            status.className = "status";
-
-            ["Pending", "In Progress", "Resolved"].forEach(value => {
-                const option = document.createElement("option");
-                option.value = value;
-                option.textContent = value;
-                status.appendChild(option);
-            });
-
-            status.value = item.status || "Pending";
-
-            status.addEventListener("change", () => {
-                const current = getComplaints();
-                const index = current.findIndex(
-                    entry => entry.id === item.id
-                );
-
-                if (index === -1) return;
-
-                const previous = current[index].status;
-
-                current[index].status = status.value;
-
-                try {
-                    saveComplaints(current);
-                    renderDashboard();
-                } catch (error) {
-                    current[index].status = previous;
-                    alert("Status save nahi hua.");
-                    renderDashboard();
-                }
-            });
-
-            label.appendChild(status);
-
-            const deleteBtn = document.createElement("button");
-            deleteBtn.className = "delete-btn";
-            deleteBtn.textContent = "Delete Complaint";
-            deleteBtn.type = "button";
-
-            deleteBtn.addEventListener("click", () => {
-                if (!confirm(
-                    "Delete complaint " +
-                    (item.complaintId || "") + "?"
-                )) return;
-
-                const current = getComplaints();
-                const index = current.findIndex(
-                    entry => entry.id === item.id
-                );
-
-                if (index === -1) return;
-
-                const deleted = current.splice(index, 1)[0];
-
-                try {
-                    saveComplaints(current);
-                    renderDashboard();
-                } catch (error) {
-                    alert("Delete failed. Please try again.");
-                }
-            });
-
-            card.append(
-                title,
-                id,
-                description,
-                location,
-                date,
-                label,
-                deleteBtn
-            );
-
-            list.appendChild(card);
+        const statusSelect = document.createElement("select");
+        ["Pending", "In Progress", "Resolved"].forEach(value => {
+          const option = document.createElement("option");
+          option.value = value;
+          option.textContent = value;
+          option.selected = getStatus(item) === value;
+          statusSelect.appendChild(option);
         });
+
+        const actions = document.createElement("div");
+        actions.className = "actions";
+
+        const update = document.createElement("button");
+        update.className = "update";
+        update.textContent = "Update Status";
+        update.addEventListener("click", () => {
+          const latest = loadComplaints();
+          if (!latest[index]) return;
+          latest[index].status = statusSelect.value;
+          saveComplaints(latest);
+          render();
+        });
+
+        const remove = document.createElement("button");
+        remove.className = "delete";
+        remove.textContent = "Delete";
+        remove.addEventListener("click", () => {
+          if (!confirm("Delete this complaint permanently from this browser?")) return;
+          const latest = loadComplaints();
+          latest.splice(index, 1);
+          saveComplaints(latest);
+          render();
+        });
+
+        actions.append(statusSelect, update, remove);
+        card.append(title, status, description, location, actions);
+        list.appendChild(card);
+      });
     }
 
-    search.addEventListener("input", renderDashboard);
-    filter.addEventListener("change", renderDashboard);
+    searchInput.addEventListener("input", render);
+    statusFilter.addEventListener("change", render);
 
-    renderDashboard();
-
-    window.addEventListener("storage", event => {
-        if (event.key === STORAGE_KEY) {
-            renderDashboard();
-        }
+    document.getElementById("logoutButton").addEventListener("click", () => {
+      sessionStorage.removeItem("greenCampusRole");
+      window.location.replace("login.html");
     });
-</script>
-<script>
-  // Demo protection: admin login required
-  if (sessionStorage.getItem("greenCampusRole") !== "admin") {
-    window.location.replace("login.html");
-  }
-</script>
+
+    render();
+  </script>
 </body>
 </html>
